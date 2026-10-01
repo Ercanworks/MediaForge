@@ -149,7 +149,7 @@ class ToolsTab(QWidget):
             return
 
         stem, ext = os.path.splitext(path)
-        output = unique_path(f"{stem} (cut){ext}")
+        output = unique_path(f"{stem} (cut){ext}", self.queue.reserved_outputs())
 
         args = ["-ss", str(start), "-i", path]
         total = duration_seconds(path, self.settings.ffprobe()) if self.settings.ffprobe() else None
@@ -217,11 +217,11 @@ class ToolsTab(QWidget):
                 QMessageBox.warning(self, "No audio", "No audio stream found in the file.")
                 return
             ext = COPY_EXTENSION.get(codec, "wav" if codec.startswith("pcm") else "mka")
-            output = unique_path(f"{stem}.{ext}")
+            output = unique_path(f"{stem}.{ext}", self.queue.reserved_outputs())
             args = ["-i", path, "-vn", "-c:a", "copy", output]
         else:
             bitrate = "192k" if choice == 1 else "320k"
-            output = unique_path(f"{stem}.mp3")
+            output = unique_path(f"{stem}.mp3", self.queue.reserved_outputs())
             args = ["-i", path, "-vn", "-c:a", "libmp3lame", "-b:a", bitrate, output]
 
         self.queue.add(FfmpegJob(os.path.basename(output), ffmpeg, args, output, duration))
@@ -315,7 +315,8 @@ class ToolsTab(QWidget):
 
         if self.join_lossless.isChecked():
             ext = os.path.splitext(first)[1] or ".mp4"
-            output = unique_path(os.path.join(os.path.dirname(first), f"{stem} (joined){ext}"))
+            output = unique_path(os.path.join(os.path.dirname(first), f"{stem} (joined){ext}"),
+                                 self.queue.reserved_outputs())
             fd, list_path = tempfile.mkstemp(suffix=".txt", prefix="mediaforge_concat_")
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 for file in files:
@@ -325,7 +326,8 @@ class ToolsTab(QWidget):
             job = FfmpegJob(os.path.basename(output), ffmpeg, args, output, total_duration)
             job.temp_files.append(list_path)
         else:
-            output = unique_path(os.path.join(os.path.dirname(first), f"{stem} (joined).mp4"))
+            output = unique_path(os.path.join(os.path.dirname(first), f"{stem} (joined).mp4"),
+                                 self.queue.reserved_outputs())
             job = self._reencoding_join(files, output, total_duration, ffmpeg, ffprobe)
             if job is None:
                 return

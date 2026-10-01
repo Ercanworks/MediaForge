@@ -10,7 +10,7 @@ import time
 
 from PySide6.QtCore import QObject, QProcess, QProcessEnvironment, Signal
 
-from helpers import human_time
+from helpers import human_time, normalize_path
 
 WAITING = "Waiting"
 RUNNING = "Running"
@@ -329,6 +329,7 @@ class QueueManager(QObject):
     """Runs waiting jobs with a concurrency limit per job kind."""
 
     structure_changed = Signal()   # jobs were added to or removed from the list
+    active_count_changed = Signal()
 
     def __init__(self, settings):
         super().__init__()
@@ -339,7 +340,13 @@ class QueueManager(QObject):
         self.jobs.append(job)
         job.finished_signal.connect(self._job_finished)
         self.structure_changed.emit()
+        self.active_count_changed.emit()
         self.pump()
+
+    def reserved_outputs(self) -> set[str]:
+        """Output files of unfinished jobs, which may not exist on disk yet."""
+        return {normalize_path(j.output_file) for j in self.jobs
+                if j.status in ACTIVE and j.output_file}
 
     def pump(self):
         limits = {
@@ -357,6 +364,7 @@ class QueueManager(QObject):
                         running += 1
 
     def _job_finished(self, _job):
+        self.active_count_changed.emit()
         self.pump()
 
     def active_count(self) -> int:

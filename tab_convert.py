@@ -360,7 +360,7 @@ class ConvertTab(QWidget):
                 output = os.path.join(self.output_box.text().strip(), f"{stem}.{container}")
             if os.path.abspath(output) == os.path.abspath(file):
                 output = os.path.join(os.path.dirname(file), f"{stem} [MF].{container}")
-            output = unique_path(output)
+            output = unique_path(output, self.queue.reserved_outputs())
 
             args = self._build_args(p, file, output, container)
             duration = duration_seconds(file, ffprobe) if ffprobe else None

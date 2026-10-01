@@ -94,13 +94,24 @@ def working_hardware_encoders(ffmpeg: str) -> set[str]:
     return {e for e in HARDWARE_ENCODERS if encoder_works(ffmpeg, e)}
 
 
-def unique_path(path: str) -> str:
-    """If the file exists, counts up as 'name (1).ext', 'name (2).ext'."""
-    if not os.path.exists(path):
+def normalize_path(path: str) -> str:
+    return os.path.normcase(os.path.abspath(path))
+
+
+def unique_path(path: str, reserved: set[str] = frozenset()) -> str:
+    """If the file exists, counts up as 'name (1).ext', 'name (2).ext'.
+
+    `reserved` holds normalized paths that queued jobs will write to but that
+    don't exist on disk yet, so two queued jobs never get the same output.
+    """
+    def taken(p: str) -> bool:
+        return os.path.exists(p) or normalize_path(p) in reserved
+
+    if not taken(path):
         return path
     stem, ext = os.path.splitext(path)
     n = 1
-    while os.path.exists(f"{stem} ({n}){ext}"):
+    while taken(f"{stem} ({n}){ext}"):
         n += 1
     return f"{stem} ({n}){ext}"
 

@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
         self.tabs.setCornerWidget(corner, Qt.TopRightCorner)
 
         self._status_bar()
-        self.queue.structure_changed.connect(self._update_badge)
+        self.queue.active_count_changed.connect(self._update_badge)
 
         # Hardware encoders (NVENC/AMF/QSV) are probed in the background;
         # GPU presets for the working ones are added to the Convert tab.
