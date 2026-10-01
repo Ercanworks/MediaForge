@@ -1,11 +1,11 @@
 @echo off
-rem MediaForge.exe derleme betigi (PyInstaller)
+rem Builds MediaForge.exe (PyInstaller)
 cd /d "%~dp0"
 python -m PyInstaller --noconfirm --clean --onefile --windowed ^
   --name MediaForge ^
-  --icon ikon.ico ^
-  --add-data "ikon.ico;." ^
+  --icon icon.ico ^
+  --add-data "icon.ico;." ^
   MediaForge.py
 echo.
-echo Cikti: dist\MediaForge.exe
+echo Output: dist\MediaForge.exe
 pause

@@ -7,7 +7,8 @@ build/
 dist/
 *.spec
 
-# Harici araçlar ve kullanıcı verisi
+# External tools and user data
 bin/
+settings.json
 ayarlar.json
 MediaForge-portable.zip
